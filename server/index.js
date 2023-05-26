@@ -10,6 +10,17 @@ const donation = {
 app.use(express.json());
 app.use(cors());
 
+app.post('/donate', (req, res) => {
+  const amount = req.body.amount || 0;
+
+  if (amount > 0) {
+    donation.amount += amount;
+    donation.user += 1;
+  }
+
+  return res.json({ message: 'Thank you 🙏' });
+});
+
 const SEND_INTERVAL = 2000;
 
 const writeEvent = (res, sseId, data) => {
