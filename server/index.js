@@ -1,18 +1,43 @@
-const app = require('express')();
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
-app.get('/', (req, res) => res.send('hello'));
+const donation = {
+  user: 0,
+  amount: 0,
+};
+
+app.use(express.json());
+app.use(cors());
+
+const SEND_INTERVAL = 2000;
+
+const writeEvent = (res, sseId, data) => {
+  res.write(`id: ${sseId}\n`);
+  res.write(`data: ${data}\n\n`);
+};
+
+const sendEvent = (req, res) => {
+  res.writeHead(200, {
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Content-Type': 'text/event-stream',
+  });
+
+  const sseId = new Date().toDateString();
+
+  setInterval(() => {
+    writeEvent(res, sseId, JSON.stringify(donation));
+  }, SEND_INTERVAL);
+
+  writeEvent(res, sseId, JSON.stringify(donation));
+};
+
 app.get('/stream', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  send(res);
+  if (req.headers.accept === 'text/event-stream') {
+    sendEvent(req, res);
+  } else {
+    res.json({ message: 'Ok' });
+  }
 });
-
-let i = 0;
-function send(res) {
-  res.write('data: ' + `hello from ${serverName} ---- [${i++}]\n\n`);
-
-  setTimeout(() => send(res), 1000);
-}
-
-app.listen(8000);
-
-console.log('Listening port 8000');
+app.listen(8000, () => console.log('Server listening in port 3000'));

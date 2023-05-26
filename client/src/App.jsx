@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [donation, setDonation] = useState({ user: 0, amount: 0 });
+  useEffect(() => {
+    const source = new EventSource(`http://localhost:8000/stream`);
+
+    source.addEventListener('open', () => {
+      console.log('SSE opened!');
+    });
+
+    source.addEventListener('message', (e) => {
+      console.log(e.data);
+      const data = JSON.parse(e.data);
+
+      setDonation(data);
+    });
+
+    source.addEventListener('error', (e) => {
+      console.error('Error: ', e);
+    });
+
+    return () => {
+      source.close();
+    };
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <h1>Donation status</h1>
+      <hr />
+      <h3>Total amount: {donation.amount}</h3>
+      <h3>Total user: {donation.user}</h3>
+    </div>
+  );
 }
 
-export default App
+export default App;
