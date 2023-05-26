@@ -8,9 +8,9 @@ const donation = {
 };
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000' }));
 
-app.post('/donate', (req, res) => {
+app.post('/stream', (req, res) => {
   const amount = req.body.amount || 0;
 
   if (amount > 0) {
@@ -18,7 +18,12 @@ app.post('/donate', (req, res) => {
     donation.user += 1;
   }
 
-  return res.json({ message: 'Thank you 🙏' });
+  return res.json({
+    message: 'Thank you 🙏',
+    data: {
+      added: amount,
+    },
+  });
 });
 
 const SEND_INTERVAL = 2000;
@@ -51,4 +56,4 @@ app.get('/stream', (req, res) => {
     res.json({ message: 'Ok' });
   }
 });
-app.listen(8000, () => console.log('Server listening in port 3000'));
+app.listen(8000, () => console.log('Server listening in port 8000'));
